@@ -1,0 +1,100 @@
+﻿@model SurveyBD.Models.Project
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@Model.Name</h2>
+
+<h4>Project Team Members</h4>
+<ul>
+    @foreach (var worker in Model.Workers)
+    {
+        <li>@worker.Name</li>
+    }
+</ul>
+
+<h4>River Survey Data</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>River Bed Level (m)</th>
+            <th>River Bank Level (m)</th>
+            <th>Water Level (m)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var data in Model.Data)
+        {
+            <tr>
+                <td>@data.Date.ToString("dd MMM yyyy")</td>
+                <td>@data.RiverBedLevel</td>
+                <td>@data.RiverBankLevel</td>
+                <td>@data.WaterLevel</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Graph of River Levels</h4>
+<canvas id="riverChart" width="800" height="400"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Data.Select(d => d.Date.ToString("dd MMM")).ToList()));
+        const bedLevels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Data.Select(d => d.RiverBedLevel).ToList()));
+        const bankLevels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Data.Select(d => d.RiverBankLevel).ToList()));
+        const waterLevels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Data.Select(d => d.WaterLevel).ToList()));
+
+        const ctx = document.getElementById('riverChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'River Bed Level',
+                        data: bedLevels,
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0,0,255,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'River Bank Level',
+                        data: bankLevels,
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0,255,0,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Water Level',
+                        data: waterLevels,
+                        borderColor: 'red',
+                        backgroundColor: 'rgba(255,0,0,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'River Survey Trends' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Level (m)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Date' }
+                    }
+                }
+            }
+        });
+    </script>
+}

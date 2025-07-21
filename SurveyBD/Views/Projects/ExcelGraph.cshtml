@@ -1,0 +1,68 @@
+﻿@model List<SurveyBD.Models.RiverSurveyData>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>River Survey Data Graph</h2>
+
+<canvas id="riverChart" width="800" height="400"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(d => d.Date.ToString("dd MMM")).ToList()));
+        const bedLevels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(d => d.RiverBedLevel).ToList()));
+        const bankLevels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(d => d.RiverBankLevel).ToList()));
+        const waterLevels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(d => d.WaterLevel).ToList()));
+
+        const ctx = document.getElementById('riverChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'River Bed Level',
+                        data: bedLevels,
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0,0,255,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'River Bank Level',
+                        data: bankLevels,
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0,255,0,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Water Level',
+                        data: waterLevels,
+                        borderColor: 'red',
+                        backgroundColor: 'rgba(255,0,0,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'River Survey Trends' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Level (m)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Date' }
+                    }
+                }
+            }
+        });
+    </script>
+}
